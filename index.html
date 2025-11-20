@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abu Baker | Creative Developer</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Syncopate:wght@700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #050505;
+            --bg-card: rgba(15, 15, 15, 0.9);
+            --primary: #ffffff;
+            --accent: #00aaff;
+            --accent-secondary: #ff0077;
+            --accent-glow: rgba(0, 170, 255, 0.4);
+            --line-color: rgba(255, 255, 255, 0.1);
+            --card-height: 70vh;
+            --gradient-1: linear-gradient(135deg, #00aaff, #0077cc);
+            --gradient-2: linear-gradient(135deg, #ff0077, #cc0066);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--primary);
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* --- Loader --- */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.8s ease;
+        }
+
+        .loader-text {
+            font-family: 'Syncopate';
+            letter-spacing: 5px;
+            color: var(--accent);
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                opacity: 0.3;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* --- Canvas --- */
+        .webgl {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+        }
+
+        /* --- Nav --- */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            mix-blend-mode: difference;
+        }
+
+        .brand {
+            font-family: 'Syncopate';
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .brand:hover::after {
+            width: 100%;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            background: rgba(0, 170, 255, 0.1);
+            color: var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .status-badge:hover {
+            background: rgba(0, 170, 255, 0.2);
+            transform: scale(1.05);
+        }
+
+        /* --- General Layout --- */
+        section {
+            width: 100%;
+            padding: 0 10%;
+            position: relative;
+        }
+
+        #hero,
+        #contact {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* Base padding for desktop to clear fixed nav */
+            padding-top: 80px;
+        }
+
+        #hero {
+            padding-bottom: 0;
+        }
+
+        h1 {
+            font-family: 'Syncopate';
+            font-size: clamp(3rem, 6vw, 8rem);
+            text-transform: uppercase;
+            line-height: 0.9;
+            margin-bottom: 1.5rem;
+            opacity: 0;
+            transform: translateY(50px);
+        }
+
+        .outlined {
+            color: white;
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
+            transition: 0.3s;
+        }
+
+        .outlined:hover {
+            color: var(--accent);
+            -webkit-text-stroke: 0;
+        }
+
+        p {
+            max-width: 500px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .section-subtitle {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-weight: 300;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-subtitle::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 30px;
+            height: 2px;
+            background: var(--accent);
+        }
+
+        /* --- PROJECTS (STACKING CARDS) --- */
+        #projects-wrapper {
+            padding-top: 10vh;
+            padding-bottom: 10vh;
+        }
+
+        .card-container {
+            display: flex;
+            flex-direction: column;
+            gap: 50px;
+        }
+
+        .card {
+            position: sticky;
+            top: 15vh;
+            height: var(--card-height);
+            margin-bottom: 10vh;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transform-origin: center top;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            will-change: transform, opacity;
+        }
+
+        .card:hover {
+            box-shadow: 0 0 30px var(--accent-glow);
+            transform: translateY(-5px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--gradient-1);
+            opacity: 0.8;
+        }
+
+        .card-content {
+            width: 45%;
+            z-index: 2;
+        }
+
+        .card-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tag {
+            font-size: 0.8rem;
+            padding: 5px 15px;
+            border: 1px solid rgba(0, 170, 255, 0.3);
+            border-radius: 20px;
+            color: #ccc;
+            background: rgba(0, 170, 255, 0.1);
+            display: inline-block;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            background: rgba(0, 170, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-link {
+            text-decoration: none;
+            color: var(--accent);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.3s;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .btn-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+
+        .btn-link:hover::after {
+            width: 100%;
+        }
+
+        .card-visual {
+            width: 45%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .visual-box {
+            width: 100%;
+            height: 70%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Syncopate';
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.5);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .visual-box img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+            border-radius: 12px;
+        }
+
+        .card:hover .visual-box {
+            color: rgba(255, 255, 255, 0.8);
+            border-color: rgba(0, 170, 255, 0.5);
+        }
+
+        /* ==================================================== */
+        /* === SKILLS SECTION: ROADMAP STYLE === */
+        /* ==================================================== */
+        #skills-timeline {
+            min-height: auto;
+            padding-top: 10vh;
+            padding-bottom: 10vh;
+            position: relative;
+        }
+
+        #skills-timeline h1 {
+            margin-bottom: 4rem;
+        }
+
+        /* 1. Roadmap Container */
+        .roadmap-container {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 50px 0;
+        }
+
+        /* 2. Central Vertical Line */
+        .central-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--accent);
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+
+        /* 3. Skill Cards Roadmap Layout */
+        .roadmap-item {
+            position: relative;
+            width: 100%;
+            margin-bottom: 80px;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .roadmap-item.left {
+            justify-content: flex-start;
+        }
+
+        .roadmap-item.right {
+            justify-content: flex-end;
+        }
+
+        /* 4. Updated Skill Card (Roadmap Version) */
+        .skill-card {
+            width: 45%;
+            padding: 25px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .skill-card:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-5px);
+        }
+
+        /* Icon and Header Styling */
+        .skill-card h3 {
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-bottom: 5px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .skill-icon {
+            margin-right: 10px;
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        .card-divider {
+            width: 40px;
+            height: 2px;
+            background: var(--accent);
+            margin: 5px 0 10px 0;
+            transform-origin: left;
+            transform: scaleX(0);
+        }
+
+        .skill-card p {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            max-width: none;
+        }
+
+        /* 5. Progress Bar Styles */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background-color: var(--line-color);
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--gradient-1);
+            transition: background 0.3s ease;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .progress-percentage {
+            position: absolute;
+            right: 0;
+            top: -20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .skill-card:hover .progress-percentage {
+            opacity: 1;
+        }
+
+        .skill-card:hover .progress-bar {
+            background: var(--gradient-2);
+        }
+
+        /* 6. Connection Dots and Lines */
+        .roadmap-dot {
+            position: absolute;
+            left: 50%;
+            width: 16px;
+            height: 16px;
+            background: var(--bg);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            transition: all 0.3s ease;
+        }
+
+        .roadmap-item:hover .roadmap-dot {
+            background: var(--accent);
+            transform: translateX(-50%) scale(1.2);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .roadmap-connector {
+            position: absolute;
+            left: 50%;
+            height: 2px;
+            background: var(--accent);
+            transform: translateX(-50%);
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        .roadmap-item.left .roadmap-connector {
+            width: calc(50% - 8px);
+            left: auto;
+            right: 50%;
+            transform: translateX(8px);
+        }
+
+        .roadmap-item.right .roadmap-connector {
+            width: calc(50% - 8px);
+            left: 50%;
+            transform: translateX(-8px);
+        }
+
+        /* --- Contact --- */
+        .contact-btn {
+            padding: 1.2rem 3rem;
+            background: var(--gradient-1);
+            color: white;
+            font-family: 'Syncopate';
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: 0.3s;
+            display: inline-block;
+            width: fit-content;
+            box-shadow: 0 5px 15px rgba(0, 170, 255, 0.3);
+        }
+
+        .contact-btn:hover {
+            transform: scale(1.05);
+            background: var(--gradient-2);
+            box-shadow: 0 8px 20px rgba(255, 0, 119, 0.4);
+        }
+
+        /* ==================================== */
+        /* === RESPONSIVENESS (Media Query) === */
+        /* ==================================== */
+
+        /* 1. Large Tablet / Small Desktop (1000px breakpoint) */
+        @media (max-width: 1000px) {
+            section {
+                padding: 0 7%;
+            }
+
+            /* Fix: Ensure Hero/Contact sections clear the fixed navigation */
+            #hero,
+            #contact {
+                padding-top: 10vh;
+            }
+
+            /* Card Layout Switch to Column for stacking on wider tablets */
+            .card {
+                padding: 2.5rem;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                /* Crucial fix for content fit and stacking scroll distance */
+                height: auto !important;
+                min-height: 70vh;
+                top: 10vh;
+                /* Consistent sticky point */
+            }
+
+            .card-content {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-bottom: 1rem;
+            }
+
+            .card-title {
+                font-size: 2.2rem;
+            }
+
+            /* Fix: Ensure image is contained and visible */
+            .card-visual {
+                width: 100%;
+                height: 300px;
+                /* Keep this height for larger tablets */
+                margin-top: 25px;
+            }
+
+            .visual-box {
+                height: 100%;
+                padding: 10px;
+            }
+
+            .visual-box img {
+                height: 100%;
+                object-fit: contain;
+                /* Ensures the whole image is visible */
+            }
+        }
+
+
+        /* 2. Standard Mobile / Small Tablet (768px breakpoint) */
+        @media (max-width: 768px) {
+            nav {
+                padding: 1.5rem 5%;
+            }
+
+            .brand {
+                font-size: 1rem;
+            }
+
+            h1 {
+                font-size: clamp(2rem, 8vw, 3rem);
+            }
+
+            p {
+                font-size: 1rem;
+                max-width: 100%;
+            }
+
+            section {
+                padding: 0 5%;
+            }
+
+            /* Fix: Increased top padding for mobile */
+            #hero,
+            #contact {
+                padding-top: 15vh;
+            }
+
+            /* Project Cards: Refined Stacking for smaller screens */
+            .card {
+                top: 10vh;
+                min-height: 70vh;
+                /* Ensures scroll space for sticky effect */
+                padding: 1.5rem;
+                /* Tighter padding */
+            }
+
+            .card-visual {
+                height: 200px;
+            }
+
+            /* Skills Roadmap: Switch to full single column */
+            .roadmap-container {
+                padding: 30px 0;
+            }
+
+            .central-line {
+                left: 30px;
+            }
+
+            .roadmap-item {
+                justify-content: flex-start !important;
+                margin-bottom: 60px;
+            }
+
+            .skill-card {
+                width: calc(100% - 60px);
+                margin-left: 60px;
+            }
+
+            .roadmap-dot {
+                left: 30px;
+            }
+
+            .roadmap-connector {
+                display: none;
+            }
+        }
+
+        /* 3. Smallest Mobile Screens (480px breakpoint down to 320px) */
+        @media (max-width: 480px) {
+            nav {
+                padding: 1rem 4%;
+            }
+
+            section {
+                padding: 0 4%;
+            }
+
+            h1 {
+                font-size: clamp(2rem, 10vw, 3rem);
+                margin-bottom: 1rem;
+            }
+
+            .section-subtitle {
+                font-size: 1rem;
+            }
+
+            /* Fix: Further increased top padding for tiny viewports */
+            #hero,
+            #contact {
+                padding-top: 20vh;
+            }
+
+            .card {
+                padding: 1rem;
+                min-height: 60vh;
+            }
+
+            .card-title {
+                font-size: 1.5rem;
+            }
+
+            .tag {
+                padding: 4px 10px;
+                font-size: 0.75rem;
+            }
+
+            .card-visual {
+                height: 150px;
+                margin-top: 15px;
+            }
+
+            .roadmap-container {
+                padding: 20px 0;
+            }
+
+            .central-line {
+                left: 20px;
+            }
+
+            .skill-card {
+                width: calc(100% - 40px);
+                margin-left: 40px;
+                padding: 15px;
+            }
+
+            .roadmap-dot {
+                left: 20px;
+            }
+
+            .skill-card h3 {
+                font-size: 1.1rem;
+            }
+
+            .skill-card p {
+                font-size: 0.8rem;
+            }
+
+            .contact-btn {
+                padding: 1rem 2rem;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+</head>
+
+<body>
+
+    <div id="loader">
+        <div class="loader-text">Loading Portfolio...</div>
+    </div>
+
+    <nav>
+        <div class="brand">ABU.DEV</div>
+        <div class="status-badge">OPEN FOR WORK</div>
+    </nav>
+
+    <canvas class="webgl"></canvas>
+
+    <main>
+        <section id="hero">
+            <h1>Abu <span class="outlined">Baker</span></h1>
+            <h2 class="section-subtitle">BCA • Creative Developer</h2>
+            <p>I am a web developer currently pursuing my BCA, with a strong interest in building modern and efficient
+                web applications. I have hands-on experience with HTML, CSS, and JavaScript for creating responsive and
+                interactive front-end designs. On the backend, I work with Python and Django to develop scalable and
+                functional web systems. I’m constantly learning and improving my skills to become a well-rounded
+                developer.</p>
+        </section>
+
+        <section id="projects-wrapper">
+            <div class="project-header">
+                <h1>Selected <span class="outlined">Work</span></h1>
+                <p class="section-subtitle">Showcasing my recent projects and experiments</p>
+            </div>
+
+            <div class="card-container">
+                <div class="card" data-card>
+                    <div class="card-content">
+                        <h2 class="card-title">Chrunchyroll CLone</h2>
+                        <p class="card-desc">This is a simple Crunchyroll clone built using HTML and CSS as my first web
+                            development project. It recreates the basic layout, banners, and anime sections to practice
+                            UI design and front-end structuring
+                        </p>
+                        <div class="card-tags">
+                            <span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">GSAP</span>
+                        </div>
+                        <a href="https://chronchyrollclone.netlify.app/" class="btn-link">View Case Study →</a>
+                    </div>
+                    <div class="card-visual">
+                        <div class="visual-box"><img src="images/project6.png" alt=""></div>
+                    </div>
+                </div>
+
+                <div class="card" data-card>
+                    <div class="card-content">
+                        <h2 class="card-title">TO-DO-LIST</h2>
+                        <p class="card-desc">This is a basic To-Do List app built with HTML, CSS, and JavaScript to
+                            practice interactive front-end development. It includes adding, deleting, and managing tasks
+                            with a clean and simple UI.</p>
+                        <div class="card-tags">
+                            <span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span>
+                        </div>
+                        <a href="https://to-do-list-seventh-project.netlify.app/" class="btn-link">View Github →</a>
+                    </div>
+                    <div class="card-visual">
+                        <div class="visual-box"><img src="images/project3.png" alt=""></div>
+                    </div>
+                </div>
+                <div class="card" data-card>
+                    <div class="card-content">
+                        <h2 class="card-title">
+                            <Caption></Caption>Credit Application Form/h2>
+                            <p class="card-desc">This Credit Application Form allows customers in the Kingdom of Bahrain
+                                to easily submit their details for credit approval with Fast Painting. It collects
+                                important information like business details.</p>
+                            <div class="card-tags">
+                                <span class="tag">HTML</span><span class="tag">CSS</span><span
+                                    class="tag">JavaScript</span>
+                            </div>
+                            <a href="https://credit-application-form.netlify.app/" class="btn-link">View Github →</a>
+                    </div>
+                    <div class="card-visual">
+                        <div class="visual-box"><img src="images/project2.png" alt=""></div>
+                    </div>
+                </div>
+
+                <div class="card" data-card>
+                    <div class="card-content">
+                        <h2 class="card-title">Calorie Calc</h2>
+                        <p class="card-desc">This project is a Calorie Calculator that computes TDEE, BMI, BMR, and
+                            daily
+                            calorie needs using HTML, CSS, and JavaScript. It provides users with quick health metrics
+                            through a simple and clean interface.</p>
+                        <div class="card-tags">
+                            <span class="tag">HTML</span><span class="tag">CSS</span><span
+                                class="tag">JavaScript</span><span class="tag">json</span>
+                        </div>
+                        <a href="https://last-updated-fitness-web-app-project.netlify.app/" class="btn-link">Live Demo
+                            →</a>
+                    </div>
+                    <div class="card-visual">
+                        <div class="visual-box"><img src="images/project4.png" alt=""></div>
+                    </div>
+                </div>
+                <div class="card" data-card>
+                    <div class="card-content">
+                        <h2 class="card-title">Django Roadmap</h2>
+                        <p class="card-desc">This “Django Roadmap Project” presents a clear, step-by-step guide to
+                            learning the Django web framework—from setting up the environment, working with models and
+                            views, to deployment and advanced topics.</p>
+                        <div class="card-tags">
+                            <span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span>
+                        </div>
+                        <a href="https://django-roadmap-project.netlify.app/" class="btn-link">Live Demo
+                            →</a>
+                    </div>
+                    <div class="card-visual">
+                        <div class="visual-box"><img src="images/project 1.png" alt=""></div>
+                    </div>
+                </div>
+                <div class="card" data-card>
+                    <div class="card-content">
+                        <h2 class="card-title">Nexus Sneakers</h2>
+                        <p class="card-desc">This is a Nexus Sneakers website built using HTML, CSS, and JavaScript with
+                            the help of AI for design ideas and workflow guidance. It showcases a modern product layout
+                            with smooth interactions and a clean, stylish UI.</p>
+                        <div class="card-tags">
+                            <span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span>
+                        </div>
+                        <a href="https://sneakerweb.netlify.app/" class="btn-link">Live Demo →</a>
+                    </div>
+                    <div class="card-visual">
+                        <div class="visual-box"><img src="images/project7.png" alt=""></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills-timeline">
+            <h1>Technical <span class="outlined">Skills</span></h1>
+            <p class="section-subtitle">My expertise across the development stack</p>
+
+            <div class="roadmap-container">
+                <div class="central-line"></div>
+
+                <div class="roadmap-item left" data-progress="90">
+                    <div class="skill-card" data-skill="htmlcss">
+                        <div>
+                            <h3><i class="fab fa-html5 skill-icon"></i>HTML CSS</h3>
+                            <div class="card-divider"></div>
+                            <p>Mastery of modern, semantic HTML and advanced CSS techniques (Flexbox, Grid, custom
+                                properties).</p>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <span class="progress-percentage">90%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-connector"></div>
+                </div>
+
+                <div class="roadmap-item right" data-progress="85">
+                    <div class="skill-card" data-skill="js">
+                        <div>
+                            <h3><i class="fab fa-js-square skill-icon"></i>JavaScript</h3>
+                            <div class="card-divider"></div>
+                            <p>Expertise in core programming logic, asynchronous patterns, and modern ES6+ features.</p>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <span class="progress-percentage">85%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-connector"></div>
+                </div>
+
+                <div class="roadmap-item left" data-progress="75">
+                    <div class="skill-card" data-skill="python">
+                        <div>
+                            <h3><i class="fab fa-python skill-icon"></i>Python</h3>
+                            <div class="card-divider"></div>
+                            <p>Experience in backend scripting, data processing, and application development
+                                (Django/Flask).</p>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <span class="progress-percentage">75%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-connector"></div>
+                </div>
+
+                <div class="roadmap-item right" data-progress="70">
+                    <div class="skill-card" data-skill="django">
+                        <div>
+                            <h3><i class="fas fa-database skill-icon"></i>Django</h3>
+                            <div class="card-divider"></div>
+                            <p>Building secure, scalable, and fully-featured web applications with Django and
+                                PostgreSQL.</p>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar">
+                                <span class="progress-percentage">70%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="roadmap-dot"></div>
+                    <div class="roadmap-connector"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contact">
+            <h1>Let's <span class="outlined">Connect</span></h1>
+            <p class="section-subtitle">Ready to bring your next project to life</p>
+            <br>
+            <a href="mailto:abubakergit1221@gmail.com" class="contact-btn">abubakergit1221@gmail.com</a>
+        </section>
+    </main>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        // --- INIT ---
+        const loader = document.getElementById('loader');
+        const initialGlobeColor = new THREE.Color(0x00ffff);
+        const finalGlobeColor = new THREE.Color(0x99aaff);
+        const greenColor = new THREE.Color(0x00ff88);
+
+        // --- THREE.JS SETUP ---
+        const canvas = document.querySelector('.webgl');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050505, 0.02);
+
+        const sizes = { w: window.innerWidth, h: window.innerHeight };
+        const camera = new THREE.PerspectiveCamera(45, sizes.w / sizes.h, 0.1, 100);
+        camera.position.z = 15;
+        scene.add(camera);
+
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });
+        renderer.setSize(sizes.w, sizes.h);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        // Post Processing (Optimized Bloom)
+        const composer = new EffectComposer(renderer);
+        composer.addPass(new RenderPass(scene, camera));
+        const bloom = new UnrealBloomPass(new THREE.Vector2(sizes.w, sizes.h), 1.0, 0.4, 0.85);
+        bloom.threshold = 0.2;
+        bloom.strength = 1.0;
+        bloom.radius = 0.3;
+        composer.addPass(bloom);
+
+        // --- GLOBE OBJECTS (LINE-BASED, SUBTLE COLOR) ---
+        const mainGroup = new THREE.Group();
+        scene.add(mainGroup);
+        mainGroup.position.x = 3.5;
+
+        // Core: Icosahedron (Wireframe)
+        const coreGeometry = new THREE.IcosahedronGeometry(1.5, 1);
+        const coreEdges = new THREE.EdgesGeometry(coreGeometry);
+        const coreMat = new THREE.LineBasicMaterial({ color: initialGlobeColor, transparent: true, opacity: 0.8 });
+        const core = new THREE.LineSegments(coreEdges, coreMat);
+        mainGroup.add(core);
+
+        // Shell: Sphere (Wireframe)
+        const shellGeometry = new THREE.SphereGeometry(2, 16, 16);
+        const shellWireframe = new THREE.WireframeGeometry(shellGeometry);
+        const shellMat = new THREE.LineBasicMaterial({ color: initialGlobeColor, transparent: true, opacity: 0.5 });
+        const shell = new THREE.LineSegments(shellWireframe, shellMat);
+        mainGroup.add(shell);
+
+        // Connecting Lines (Optimized)
+        const numLines = 500;
+        const maxRadius = 2.0;
+        const linePositions = new Float32Array(numLines * 6);
+
+        for (let i = 0; i < numLines; i++) {
+            const r1 = Math.random() * maxRadius;
+            const theta1 = Math.random() * Math.PI * 2;
+            const phi1 = Math.random() * Math.PI;
+            const x1 = r1 * Math.sin(phi1) * Math.cos(theta1);
+            const y1 = r1 * Math.sin(phi1) * Math.sin(theta1);
+            const z1 = r1 * Math.cos(phi1);
+
+            const r2 = Math.random() * maxRadius;
+            const theta2 = Math.random() * Math.PI * 2;
+            const phi2 = Math.random() * Math.PI;
+            const x2 = r2 * Math.sin(phi2) * Math.cos(theta2);
+            const y2 = r2 * Math.sin(phi2) * Math.sin(theta2);
+            const z2 = r2 * Math.cos(phi2);
+
+            linePositions[i * 6] = x1;
+            linePositions[i * 6 + 1] = y1;
+            linePositions[i * 6 + 2] = z1;
+            linePositions[i * 6 + 3] = x2;
+            linePositions[i * 6 + 4] = y2;
+            linePositions[i * 6 + 5] = z2;
+        }
+
+        const linesGeometry = new THREE.BufferGeometry();
+        linesGeometry.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
+        const linesMaterial = new THREE.LineBasicMaterial({ color: 0x888888, transparent: true, opacity: 0.1 });
+        const connectionLines = new THREE.LineSegments(linesGeometry, linesMaterial);
+        mainGroup.add(connectionLines);
+
+        // --- LIGHTING ---
+        scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+        const lightPrimary = new THREE.DirectionalLight(initialGlobeColor, 3);
+        lightPrimary.position.set(5, 5, 5);
+        scene.add(lightPrimary);
+        const lightSecondary = new THREE.DirectionalLight(0xffffff, 1);
+        lightSecondary.position.set(-5, -5, 2);
+        scene.add(lightSecondary);
+
+        // --- GSAP & SCROLL ---
+        gsap.registerPlugin(ScrollTrigger);
+        const lenis = new Lenis({ smooth: true, lerp: 0.07 });
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => lenis.raf(time * 1000));
+
+        // LOADER AND INTRO ANIMATION
+        window.onload = () => {
+            const introTimeline = gsap.timeline({
+                onComplete: () => loader.remove()
+            });
+
+            introTimeline
+                .to(loader, { opacity: 0, duration: 1.2, ease: "power2.out" }, "start")
+                .to(camera.position, { z: 9, duration: 2, ease: "power2.out" }, "start")
+                .to(coreMat.color, { r: finalGlobeColor.r, g: finalGlobeColor.g, b: finalGlobeColor.b, duration: 1.5, ease: "power2.out" }, "start+=0.5")
+                .to(shellMat.color, { r: finalGlobeColor.r, g: finalGlobeColor.g, b: finalGlobeColor.b, duration: 1.5, ease: "power2.out" }, "start+=0.5")
+                .to(lightPrimary.color, { r: finalGlobeColor.r, g: finalGlobeColor.g, b: finalGlobeColor.b, duration: 1.5, ease: "power2.out" }, "start+=0.5");
+        };
+
+        // 1. GLOBAL GLOBE TIMELINE
+        const tl = gsap.timeline({
+            scrollTrigger: { trigger: "main", start: "top top", end: "bottom bottom", scrub: 1 }
+        });
+
+        // Hero (Starts Right: x=3.5) -> Projects (Moves Left: x=-3.5)
+        tl.to(mainGroup.position, { x: -3.5, z: 0 }, "start")
+            .to(mainGroup.rotation, { x: 0.5, y: Math.PI * 0.5 }, "start")
+            .to(shell.position, { x: 0.5 }, "start")
+            .to(core.position, { x: -0.5 }, "start")
+            .to(connectionLines.material, { opacity: 0.3 }, "start");
+
+        // Projects -> Skills (Moves to Center/Slight Right: x=3.5)
+        tl.to(mainGroup.position, { x: 3.5, y: 0, z: 0 }, "mid")
+            .to(mainGroup.rotation, { x: Math.PI, y: Math.PI * 2.5 }, "mid")
+            .to(shell.position, { x: 0 }, "mid")
+            .to(core.position, { x: 0 }, "mid")
+            .to(coreMat.color, { r: greenColor.r, g: greenColor.g, b: greenColor.b }, "mid")
+            .to(shellMat.color, { r: greenColor.r, g: greenColor.g, b: greenColor.b }, "mid")
+            .to(lightPrimary.color, { r: greenColor.r, g: greenColor.g, b: greenColor.b }, "mid");
+
+        // Skills -> Contact (Moves back to Center/Forward: x=0, z=4)
+        tl.to(mainGroup.position, { x: 0, z: 4 }, "end")
+            .to(bloom, { strength: 2.5 }, "end")
+            .to(mainGroup.rotation, { y: Math.PI * 6, z: Math.PI * 2 }, "end")
+            .to(connectionLines.material, { opacity: 0.8 }, "end")
+            .to(coreMat.color, { r: finalGlobeColor.r, g: finalGlobeColor.g, b: finalGlobeColor.b }, "end")
+            .to(shellMat.color, { r: finalGlobeColor.r, g: finalGlobeColor.g, b: finalGlobeColor.b }, "end")
+            .to(lightPrimary.color, { r: finalGlobeColor.r, g: finalGlobeColor.g, b: finalGlobeColor.b }, "end");
+
+        // 2. CARD ANIMATION LOGIC (Projects) - Stacking/Skew Effect
+        const cards = document.querySelectorAll('.card');
+
+        cards.forEach((card, index) => {
+            // 1. Set z-index so the first card (index 0) gets the lowest z-index (1),
+            // and the last card (index 3) gets the highest z-index (4).
+            gsap.set(card, { zIndex: index + 1 });
+
+            // 2. --- ARRIVAL ANIMATION (Pulls card from bottom to active state) ---
+            if (index > 0) {
+                // Initial, peeking state before arrival
+                gsap.set(card, { scale: 0.95, y: 150, rotation: index % 2 === 0 ? 1 : -1, opacity: 0.9 });
+
+                // Animation to bring card to active state
+                gsap.to(card, {
+                    scale: 1,
+                    y: 0,
+                    rotation: 0,
+                    opacity: 1,
+                    ease: "power2.out",
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 90%", // Start early
+                        end: "top 15vh", // End when card hits sticky point
+                        scrub: true
+                    }
+                });
+            } else {
+                // Card 0 starts active
+                gsap.set(card, { scale: 1, y: 0, rotation: 0, opacity: 1 });
+            }
+
+            // 3. --- STACKING ANIMATION (Pushes active card into the background stack) ---
+            // This runs while the card is pinned (or in its sticky position)
+            gsap.to(card, {
+                // Target Stacked State: Final look when card is fully pushed down
+                y: (index + 1) * 25, // Move down 25px, 50px, 75px...
+                scale: 1 - ((index + 1) * 0.03), // Scale down: 0.97, 0.94, 0.91...
+                rotation: (index + 1) % 2 === 0 ? 4 : -4, // More noticeable rotation
+                opacity: 1, // Keep it visible in the stack
+                ease: "none",
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top 15vh", // Start transforming as soon as it hits the sticky point
+                    end: "bottom 15vh", // Finish transformation when the bottom of the card passes the sticky point
+                    scrub: true
+                }
+            });
+        });
+
+        // 3. SKILLS ROADMAP ANIMATION LOGIC
+        const roadmapItems = document.querySelectorAll('.roadmap-item');
+        roadmapItems.forEach((item, index) => {
+            const skillCard = item.querySelector('.skill-card');
+            const progressBar = skillCard.querySelector('.progress-bar');
+            const divider = skillCard.querySelector('.card-divider');
+            const progressPercentage = skillCard.querySelector('.progress-percentage');
+            const progressValue = item.dataset.progress;
+            const roadmapDot = item.querySelector('.roadmap-dot');
+            const roadmapConnector = item.querySelector('.roadmap-connector');
+
+            // Set initial state for all elements
+            gsap.set(item, { opacity: 0, y: 50 });
+            gsap.set(progressBar, { width: 0 });
+            gsap.set(divider, { scaleX: 0 });
+            gsap.set(progressPercentage, { opacity: 0 });
+            gsap.set(roadmapDot, { scale: 0 });
+            gsap.set(roadmapConnector, { scaleX: 0 });
+
+            ScrollTrigger.create({
+                trigger: item,
+                start: "top 85%",
+                once: true,
+
+                onEnter: () => {
+                    // Item fade-in animation
+                    gsap.to(item, {
+                        opacity: 1,
+                        y: 0,
+                        duration: 0.8,
+                        ease: "power2.out"
+                    });
+
+                    // Dot animation
+                    gsap.to(roadmapDot, {
+                        scale: 1,
+                        duration: 0.5,
+                        ease: "back.out(1.7)"
+                    });
+
+                    // Connector animation
+                    gsap.to(roadmapConnector, {
+                        scaleX: 1,
+                        duration: 0.8,
+                        delay: 0.2,
+                        ease: "power2.out"
+                    });
+
+                    // Divider animation
+                    gsap.to(divider, {
+                        scaleX: 1,
+                        duration: 0.5,
+                        ease: "power2.out"
+                    });
+
+                    // Progress bar animation
+                    gsap.to(progressBar, {
+                        width: `${progressValue}%`,
+                        duration: 1.5,
+                        delay: 0.3,
+                        ease: "power4.out",
+                        onComplete: () => {
+                            // Show percentage after progress bar completes
+                            gsap.to(progressPercentage, {
+                                opacity: 1,
+                                duration: 0.5
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        // Text Reveals
+        document.querySelectorAll('h1, p').forEach(el => {
+            gsap.to(el, { opacity: 1, y: 0, duration: 1, scrollTrigger: { trigger: el, start: "top 85%" } });
+        });
+
+        // --- SKILL CARD COLOR INTERACTIONS ---
+        document.querySelectorAll('.skill-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const accentColor = new THREE.Color(0x00aaff);
+                gsap.to(coreMat.color, { r: accentColor.r, g: accentColor.g, b: accentColor.b, duration: 0.3 });
+                gsap.to(shellMat.color, { r: accentColor.r, g: accentColor.g, b: accentColor.b, duration: 0.3 });
+                gsap.to(lightPrimary.color, { r: accentColor.r, g: accentColor.g, b: accentColor.b, duration: 0.3 });
+            });
+
+            card.addEventListener('mouseleave', () => {
+                const greenColor = new THREE.Color(0x00ff88);
+                gsap.to(coreMat.color, { r: greenColor.r, g: greenColor.g, b: greenColor.b, duration: 0.5 });
+                gsap.to(shellMat.color, { r: greenColor.r, g: greenColor.g, b: greenColor.b, duration: 0.5 });
+                gsap.to(lightPrimary.color, { r: greenColor.r, g: greenColor.g, b: greenColor.b, duration: 0.5 });
+            });
+        });
+
+        // --- ANIMATION LOOP ---
+        const clock = new THREE.Clock();
+        let mouse = { x: 0, y: 0 };
+        window.addEventListener('mousemove', e => {
+            mouse.x = (e.clientX / sizes.w) - 0.5;
+            mouse.y = (e.clientY / sizes.h) - 0.5;
+        });
+
+        function tick() {
+            core.rotation.x += 0.005;
+            core.rotation.y += 0.005;
+            shell.rotation.x -= 0.003;
+            shell.rotation.y -= 0.003;
+
+            // Mouse Parallax
+            mainGroup.rotation.x += (mouse.y * 0.15 - mainGroup.rotation.x) * 0.05;
+            mainGroup.rotation.y += (mouse.x * 0.15 - mainGroup.rotation.y) * 0.05;
+
+            composer.render();
+            requestAnimationFrame(tick);
+        }
+        tick();
+
+        window.addEventListener('resize', () => {
+            sizes.w = window.innerWidth;
+            sizes.h = window.innerHeight;
+            camera.aspect = sizes.w / sizes.h;
+            camera.updateProjectionMatrix();
+            renderer.setSize(sizes.w, sizes.h);
+            composer.setSize(sizes.w, sizes.h);
+        });
+    </script>
+</body>
+
+</html>
